@@ -30,6 +30,7 @@ import (
 
 	// 3rd Party
 	"github.com/satori/go.uuid"
+	"github.com/Showmax/go-fqdn"
 
 	// Merlin Main
 	"github.com/Ne0nd0g/merlin/pkg/messages"
@@ -64,6 +65,7 @@ type Agent struct {
 	FailedCheckin int                     // FailedCheckin is a count of the total number of failed check ins
 	Initial       bool                    // Initial identifies if the agent has successfully completed the first initial check in
 	KillDate      int64                   // killDate is a unix timestamp that denotes a time the executable will not run after (if it is 0 it will not be used)
+	Domain     	  string                  // Domain is a the name of a domain that the agent should be part of in order to execute  
 }
 
 // Config is a structure that is used to pass in all necessary information to instantiate a new Agent
@@ -71,6 +73,7 @@ type Config struct {
 	Sleep    string // Sleep is the amount of time the Agent will wait between sending messages to the server
 	Skew     string // Skew is the variance, or jitter, used to vary the sleep time so that it isn't constant
 	KillDate string // KillDate is the date, as a Unix timestamp, that agent will quit running
+	Domain 	 string // fqdn is the full qualified domain name that, if set, that agent will run in
 	MaxRetry string // MaxRetry is the maximum amount of time an agent will fail to check in before it quits running
 }
 
@@ -131,6 +134,7 @@ func New(config Config) (*Agent, error) {
 	} else {
 		agent.KillDate = 0
 	}
+
 	// Parse MaxRetry
 	if config.MaxRetry != "" {
 		agent.MaxRetry, err = strconv.Atoi(config.MaxRetry)
@@ -186,6 +190,12 @@ func (a *Agent) Run() {
 			cli.Message(cli.WARN, fmt.Sprintf("agent kill date has been exceeded: %s", time.Unix(a.KillDate, 0).UTC().Format(time.RFC3339)))
 			os.Exit(0)
 		}
+		// Verify if the agent is executed in de correct domain
+		if (a.Domain != "") && (fqdn.FqdnHostname() == a.Domain) {
+			cli.Message(cli.WARN, fmt.Sprintf("agent doesn't belong in the following domain: %s", a.Domain)))
+			os.Exit(0)
+		}
+
 		// Check in
 		if a.Initial {
 			cli.Message(cli.NOTE, "Checking in...")
