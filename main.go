@@ -44,6 +44,7 @@ var useragent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KH
 var sleep = "30s"
 var skew = "3000"
 var killdate = "0"
+var domain = ""
 var maxretry = "7"
 var padding = "4096"
 var opaque []byte
@@ -61,6 +62,7 @@ func main() {
 	flag.StringVar(&sleep, "sleep", sleep, "Time for agent to sleep")
 	flag.StringVar(&skew, "skew", skew, "Amount of skew, or variance, between agent checkins")
 	flag.StringVar(&killdate, "killdate", killdate, "The date, as a Unix EPOCH timestamp, that the agent will quit running")
+	flag.StringVar(&domain, "domain", domain, "The domain in which the agent should be running")
 	flag.StringVar(&maxretry, "maxretry", maxretry, "The maximum amount of failed checkins before the agent will quit running")
 	flag.StringVar(&padding, "padding", padding, "The maximum amount of data that will be randomly selected and appended to every message")
 	flag.StringVar(&useragent, "useragent", useragent, "The HTTP User-Agent header string that the Agent will use while sending traffic")
@@ -82,6 +84,7 @@ func main() {
 		Sleep:    sleep,
 		Skew:     skew,
 		KillDate: killdate,
+		Domain:   domain,
 		MaxRetry: maxretry,
 	}
 	a, err := agent.New(agentConfig)
